@@ -27,7 +27,7 @@
 
 sb7::application * sb7::application::app = 0;
 
-#include <GL/glext.h>
+//#include <GL/glext.h>
 
 #include <string.h>
 

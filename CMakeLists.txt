@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
 
 project (superbible7)
+set(CMAKE_CXX_STANDARD 11)
+
+add_subdirectory(extern/glfw-3.0.4)
 
 LINK_DIRECTORIES( ${CMAKE_SOURCE_DIR}/lib )
 
@@ -26,8 +29,19 @@ elseif (UNIX)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLFW REQUIRED glfw3)
 set(COMMON_LIBS sb7 glfw3 X11 Xrandr Xinerama Xi Xxf86vm Xcursor GL rt dl)
-else()
+set(COMMON_LIBS sb7 glfw ${GLFW_LIBRARIES} GL rt dl)
+endif()
+
+if (APPLE)
+INCLUDE_DIRECTORIES(/System/Library/Frameworks)
+FIND_LIBRARY(COCOA_LIBRARY Cocoa)
+FIND_LIBRARY(OpenGL_LIBRARY OpenGL)
+FIND_LIBRARY(IOKit_LIBRARY IOKit)
+FIND_LIBRARY(CoreVideo_LIBRARY CoreVideo)
+
+MARK_AS_ADVANCED(COCOA_LIBRARY OpenGL_LIBRARY)
 set(COMMON_LIBS sb7)
+SET(EXTRA_LIBS ${COCOA_LIBRARY} ${IOKit_LIBRARY} ${CoreVideo_LIBRARY} ${OpenGL_LIBRARY})
 endif()
 
 set(COMMON_LIBS ${COMMON_LIBS} ${EXTRA_LIBS})
@@ -139,7 +153,7 @@ endif()
 foreach(EXAMPLE ${EXAMPLES})
   add_executable(${EXAMPLE} WIN32 src/${EXAMPLE}/${EXAMPLE}.cpp)
   set_property(TARGET ${EXAMPLE} PROPERTY DEBUG_POSTFIX _d)
-  target_link_libraries(${EXAMPLE} ${COMMON_LIBS})
+  target_link_libraries(${EXAMPLE} glfw ${COMMON_LIBS})
   if(MSVC)
     configure_file(${PROJECT_SOURCE_DIR}/build/templates/vs2013.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${EXAMPLE}.vcxproj.user @ONLY)
   endif(MSVC)
